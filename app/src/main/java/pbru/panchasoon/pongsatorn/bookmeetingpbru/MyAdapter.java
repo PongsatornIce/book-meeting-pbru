@@ -6,7 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * Created by addoid on 5/25/2016.
@@ -60,14 +63,17 @@ public class MyAdapter extends BaseAdapter{
         nameBuildTextView.setText(nameBuildStrings[i]);
 
         TextView sizeTextView = (TextView) view1.findViewById(R.id.textView10);
-        sizeTextView.setText(sizeStrings[i]);
+        sizeTextView.setText("จำนวนที่นั่ง " + sizeStrings[i]);
 
         TextView priceDayTextView = (TextView) view1.findViewById(R.id.textView11);
-        priceDayTextView.setText(priceDayStrings[i]);
+        priceDayTextView.setText("วันธรรมดา " + priceDayStrings[i]);
 
         TextView priceHoliTextView = (TextView) view1.findViewById(R.id.textView12);
-        priceHoliTextView.setText(priceHolidayStrings[i]);
+        priceHoliTextView.setText("วันหยุด " + priceHolidayStrings[i]);
 
+        //  โค้ดการใส่รูป และขนานของรูปที่เราตั้งไว
+        ImageView imageView =  (ImageView) view1.findViewById(R.id.imageView2);
+        Picasso.with(context).load(iconStrings[i]).resize(110, 100).into(imageView);
 
 
         return view1;

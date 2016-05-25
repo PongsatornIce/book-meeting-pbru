@@ -1,6 +1,7 @@
 package pbru.panchasoon.pongsatorn.bookmeetingpbru;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.Image;
 import android.os.AsyncTask;
@@ -24,9 +25,11 @@ public class MainActivity extends AppCompatActivity {
     //ประกาศตัวแปร
     private MyManage myManage;
     private String strURL = "http://swiftcodingthai.com/pbru/get_user.php";
-    private String strLogo = "http://swiftcodingthai.com/pbru/Image/logo_pbru.png";
+    private String strLogo = "http://swiftcodingthai.com/pbru/Image/logo_pbru1.png";
     private ImageView imageView;
     private EditText userEditText, passwordEditText;
+    private String userString, passwordString;
+    private String[] userLoginStrings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,68 @@ public class MainActivity extends AppCompatActivity {
 
     } // Main Method
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        deleteAllSQLite();
+        synJSON();
+    }
+
+    public void clickSingIn(View view) {
+
+        userString = userEditText.getText().toString().trim();
+        passwordString = passwordEditText.getText().toString().trim();
+
+        //เช็ค สเปส
+        if (userString.equals("") || passwordString.equals("")) {
+            //จะทำงานในสภาวะที่มีช่องว่าง หรือ ค่าว่าง
+            MyAlert myAlert = new MyAlert();
+            myAlert.myDialog(this,"มีช่องว่าง","กรุณากรอกช่างว่าง");
+
+        } else {
+            //เช็คว่ามีค่าว่างไม
+
+            searchUser(userString);
+        }
+
+    }  //ทำปุ่มคลิก ลงชื่อเข้าใช้ หรือ ปุ่ม SingIn
+
+    private void searchUser(String userString) {
+
+        try {
+            //
+            SQLiteDatabase sqLiteDatabase = openOrCreateDatabase(MyOpenHelper.database_name,
+                    MODE_PRIVATE, null);
+            Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM userTABLE WHERE User = " + "'" + userString + "'", null);
+            cursor.moveToFirst();
+            userLoginStrings = new String[cursor.getColumnCount()];
+            for (int i=0;i<cursor.getColumnCount();i++){
+                userLoginStrings[i] = cursor.getString(i);
+            } //หลูบ
+            cursor.close();
+
+            //เช็ค Password
+            if (passwordString.equals(userLoginStrings[6])) {
+                //Password ที่ถูกต้องแล้ว
+                Intent intent = new Intent(MainActivity.this, ServiceActivity.class);
+                                                        //this คือจุดเริ่มต้น class คือจุดสิ้นสุด
+                intent.putExtra("User", userLoginStrings);
+                startActivity(intent);
+                finish();
+
+            } else {
+                //Password ที่ไม่ถูกต้อง
+                MyAlert myAlert = new MyAlert();
+                myAlert.myDialog(this,"พาสเวอร์ผิดพลาด","กรุณาตรวจสอบ");
+            }
+
+
+        } catch (Exception e) {
+            MyAlert myAlert = new MyAlert();
+            myAlert.myDialog(this,"ไม่มี User นี้", "ไม่ถูกต้อง" + userString + "ในฐานข้อมูล");
+        }
+
+    }   //โค้ดค้นหา User ในฐานข้อมูล
     private void synJSON() {
         SynUser synUser = new SynUser();
         synUser.execute();

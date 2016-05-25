@@ -7,6 +7,21 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="pbru.panchasoon.pongsatorn.bookmeetingpbru.ServiceActivity">
+    tools:context="pbru.panchasoon.pongsatorn.bookmeetingpbru.ServiceActivity"
+    android:background="@drawable/img_menu11">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Text"
+        android:id="@+id/textView7"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/text" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_below="@+id/textView7"
+        android:background="#50ffffff" />
 </RelativeLayout>

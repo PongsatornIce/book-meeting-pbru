@@ -1,8 +1,11 @@
 package pbru.panchasoon.pongsatorn.bookmeetingpbru;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
@@ -90,26 +93,67 @@ public class SingUpActivity extends AppCompatActivity {
         if (checkSpace()) {
             //Have Space
             MyAlert myAlert = new MyAlert();
-            myAlert.myDialog(this, "ข้อมลูไม่พอ",
-                    "กรุณากรอกทุกช่อง");
+            myAlert.myDialog(this, "ข้อมลูไม่พอ", "กรุณากรอกทุกช่อง");
         } else if (idCardString.length()!= 13) {  //check idCard
             MyAlert myAlert = new MyAlert();
-            myAlert.myDialog(this,"รหัสบัตรประชาชนผิด",
-                    "รหัสบัตรประชาชน ต้องมี 13 หลักเท่านั้น");
+            myAlert.myDialog(this,"รหัสบัตรประชาชนผิด", "รหัสบัตรประชาชน ต้องมี 13 หลักเท่านั้น");
         } else if (checkRadioChoose()) {
             //Non Check
-
             MyAlert myAlert = new MyAlert();
-            myAlert.myDialog(this, "ยังไม่เลือกสถานะ",
-            "โปรดเลือกสถานะ");
-
+            myAlert.myDialog(this, "ยังไม่เลือกสถานะ", "โปรดเลือกสถานะ");
+        } else if (checkser()) {
+            //จะแสดงสภาวะว่ามี User อยู่แล้ว
+            MyAlert myAlert = new MyAlert();
+            myAlert.myDialog(this, "มี User นี่แล้ว", "กรุณาตรวจสอบ");
+        } else if (chekcIDcard()) {
+            MyAlert myAlert = new MyAlert();
+            myAlert.myDialog(this,"รหัสบัตรประชาชนถูกใช้แล้ว", "กรุณาตรวจสอบ");
         } else {
             uploadValuetoServer();
+        }
 
+    }   // clickSing
+
+    private boolean chekcIDcard() {
+
+        try {
+
+            SQLiteDatabase sqLiteDatabase = openOrCreateDatabase(MyOpenHelper.database_name,
+                    MODE_PRIVATE, null);
+            Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FORM userTABLE WHERE IDcard = " + "'" + idCardString + "'", null);
+            cursor.moveToFirst();
+
+            Log.d("25May", "ID ==> " + idCardString);
+            Log.d("25May", "ID get ==>" + cursor.getString(3));
+
+            return true;
+
+        } catch (Exception e) {
+            return false;
         }
 
 
-    }   // clickSing
+    }
+
+    private boolean checkser() {
+
+        try {
+
+            SQLiteDatabase sqLiteDatabase = openOrCreateDatabase(MyOpenHelper.database_name,
+                    MODE_PRIVATE, null);
+            Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FORM userTABLE WHERE User = " + "'" + userString + "'", null);
+            cursor.moveToFirst();
+
+            Log.d("25May", "ID ==> " + userString);
+            Log.d("25May", "ID get ==>" + cursor.getString(5));
+
+            return true;
+
+        } catch (Exception e) {
+            return false;
+        }
+
+    }
 
     private void uploadValuetoServer() {
 

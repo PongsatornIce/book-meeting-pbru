@@ -22,6 +22,12 @@ public class MyManage {
     public static final String column_User = "User";
     public static final String column_Password = "Password";
 
+    public static final String order_table = "orderTABLE";
+    public static final String column_nameRoom = "NameRoom";
+    public static final String column_data = "Data";
+    public static final String column_time = "Time";
+
+
 
 
     public MyManage(Context context) {
@@ -29,8 +35,21 @@ public class MyManage {
         myOpenHelper = new MyOpenHelper(context);
         sqLiteDatabase = myOpenHelper.getWritableDatabase();
 
-
     } //สามารถต่อท่อได้
+
+    public long addOrder(String strIDcard,
+                         String steNameRoom,
+                         String strData,
+                         String strTime) {
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(column_IDcard, strIDcard);
+        contentValues.put(column_nameRoom, steNameRoom);
+        contentValues.put(column_data, strData);
+        contentValues.put(column_time, strTime);
+
+        return sqLiteDatabase.insert(order_table,null,contentValues);
+    }
 
     public long addUser(String strName,
                         String strSurname,

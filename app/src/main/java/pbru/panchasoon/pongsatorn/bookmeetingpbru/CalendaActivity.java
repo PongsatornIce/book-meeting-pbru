@@ -2,6 +2,8 @@ package pbru.panchasoon.pongsatorn.bookmeetingpbru;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +23,9 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -57,12 +62,11 @@ public class CalendaActivity extends AppCompatActivity {
         SynOrderTABLE synOrderTABLE = new SynOrderTABLE();
         synOrderTABLE.execute();
 
-
     }   // Main Method
 
     public class SynOrderTABLE extends AsyncTask<Void, Void, String> {
         @Override
-        protected String doInBackground(Void... params) {
+        protected String doInBackground(Void... voids) {
 
             try {
 
@@ -76,16 +80,40 @@ public class CalendaActivity extends AppCompatActivity {
                 return null;
             }
 
-        } // doIN
+        }   // doIn
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
 
-            Log.d("26May", "JSON ==>" + s);
+            Log.d("26May", "JSON ==> " + s);
 
-        } //onPost
-    } //Syn Class
+            try {
+
+                JSONArray jsonArray = new JSONArray(s);
+
+                for (int i=0;i<jsonArray.length();i++) {
+
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    String strIDcard = jsonObject.getString(MyManage.column_IDcard);
+                    String strNameRoom = jsonObject.getString(MyManage.column_nameRoom);
+                    String strDate = jsonObject.getString(MyManage.column_data);
+                    String strTime = jsonObject.getString(MyManage.column_time);
+
+                    MyManage myManage = new MyManage(CalendaActivity.this);
+                    myManage.addOrder(strIDcard, strNameRoom, strDate, strTime);
+
+                }   // for
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }    // onPost
+
+    }   // Syn Class
 
 
     private void setupDate() {
@@ -139,31 +167,43 @@ public class CalendaActivity extends AppCompatActivity {
                 if (year < yearAnInt) {
                     alertErrorDay();
                 } else {
-                    if ((month+1) < monthAnInt) {
-                        alertErrorDay();
 
-                    } else {
+                    if (year == yearAnInt) {
 
-                        if ((month + 1) == monthAnInt) {
-
-                            if ((day <= dayAnInt)) {
-                                alertErrorDay();
-                            } else {
-                                dayAnInt = day;
-                                monthAnInt = month +1;
-                                yearAnInt = year;
-                            }
+                        if ((month+1) < monthAnInt) {
+                            alertErrorDay();
 
                         } else {
 
-                            dayAnInt = day;
-                            monthAnInt = month +1;
-                            yearAnInt = year;
+                            if ((month + 1) == monthAnInt) {
+
+                                if ((day <= dayAnInt)) {
+                                    alertErrorDay();
+                                } else {
+                                    dayAnInt = day;
+                                    monthAnInt = month +1;
+                                    yearAnInt = year;
+                                }
+
+                            } else {
+
+                                dayAnInt = day;
+                                monthAnInt = month +1;
+                                yearAnInt = year;
+
+                            }
 
                         }
 
+                    } else {
+
+                        dayAnInt = day;
+                        monthAnInt = month +1;
+                        yearAnInt = year;
+
                     }
-                }
+
+                }   // if year
 
 
             }    //onSelectDay
@@ -221,12 +261,42 @@ public class CalendaActivity extends AppCompatActivity {
         if (checkRadioButton()) {
             MyAlert myAlert = new MyAlert();
             myAlert.myDialog(this, "ยังไม่เลื่อกเวลา", "โปรดเลือกเวลา");
+        } else if (checkRoom()) {
+
+            MyAlert myAlert = new MyAlert();
+            myAlert.myDialog(this, "ห้องไม่ว่าง", "กรุณาเลือกห้อง หรือ วันเวลาใหม่");
+
         } else {
             updateToServer();
         }
 
 
     }   // clickOrder
+
+    private boolean checkRoom() {
+
+        try {
+
+            dateString = createDate(dayAnInt);
+
+            SQLiteDatabase sqLiteDatabase = openOrCreateDatabase(MyOpenHelper.database_name,
+                    MODE_PRIVATE, null);
+            Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM orderTABLE WHERE NameRoom = " + "'" + nameRoomString + "'" + " AND Date = " + "'" + dateString + "'", null);
+            cursor.moveToFirst();
+
+            Log.d("26MayV1", "dateString ==> " + dateString);
+
+            Log.d("26MayV1", "Room ==> " + cursor.getString(2));
+            Log.d("26MayV1", "Date จาก SQLite ==> " + cursor.getString(3));
+
+            return true;
+        } catch (Exception e) {
+            Log.d("26MayV1", "myError ==> " + e.toString());
+            return false;
+        }
+
+
+    }
 
     private void updateToServer() {
 
@@ -267,7 +337,7 @@ public class CalendaActivity extends AppCompatActivity {
 
         for (int i=0;i<loopDayAnInt;i++) {
 
-            intDay = intDay + i;
+            intDay = dayAnInt + i;
 
             OkHttpClient okHttpClient = new OkHttpClient();
             RequestBody requestBody = new FormEncodingBuilder()
@@ -292,11 +362,10 @@ public class CalendaActivity extends AppCompatActivity {
                 }
             });
 
-        } //for
 
+        }   // for
 
-
-    } //updateOrderTABLE
+    }   // updateOrder
 
     private String createDate(int intDay) {
 
